@@ -14,18 +14,15 @@ END;
 /
 COMMIT;
 
--- 1) Adaugare Rezultate Cursa
 BEGIN
-  pkg_f1.pr_add_result('MONACO_2026','VER','FINISH',1,'Y'); -- +1 fastest lap
+  pkg_f1.pr_add_result('MONACO_2026','VER','FINISH',1,'Y');
   pkg_f1.pr_add_result('MONACO_2026','LEC','FINISH',2,'N');
   pkg_f1.pr_add_result('MONACO_2026','NOR','FINISH',3,'N');
   pkg_f1.pr_add_result('MONACO_2026','HAM','FINISH',4,'N');
   pkg_f1.pr_add_result('MONACO_2026','SAI','FINISH',5,'N');
   pkg_f1.pr_add_result('MONACO_2026','RUS','FINISH',6,'N');
-
   pkg_f1.pr_add_result('MONACO_2026','PER','DNF',NULL,'N');
   pkg_f1.pr_add_result('MONACO_2026','PIA','DNF',NULL,'N');
-
   DBMS_OUTPUT.PUT_LINE('Results inserted for MONACO_2026.');
 EXCEPTION
   WHEN OTHERS THEN

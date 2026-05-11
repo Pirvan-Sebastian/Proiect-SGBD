@@ -1,5 +1,4 @@
 CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
-
   FUNCTION fn_points_for_position(p_position NUMBER) RETURN NUMBER IS
   BEGIN
     RETURN CASE p_position
@@ -35,12 +34,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
 
     RETURN v_points;
   END fn_driver_season_points;
-
-
-  FUNCTION fn_team_season_points(
-    p_season_year NUMBER,
-    p_team_code   VARCHAR2
-  ) RETURN NUMBER IS
+  FUNCTION fn_team_season_points(p_season_year NUMBER, p_team_code VARCHAR2) RETURN NUMBER IS
     v_points NUMBER;
   BEGIN
     SELECT NVL(SUM(rr.points), 0)
@@ -55,25 +49,12 @@ CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
 
     RETURN v_points;
   END fn_team_season_points;
-
-
-  PROCEDURE pr_add_result(
-    p_gp_code      VARCHAR2,
-    p_driver_code  VARCHAR2,
-    p_status       VARCHAR2,
-    p_position     NUMBER DEFAULT NULL,
-    p_fastest_lap  CHAR   DEFAULT 'N'
-  ) IS
-    v_race_id   f1_races.race_id%TYPE;
+  PROCEDURE pr_add_result(p_gp_code VARCHAR2, p_driver_code VARCHAR2, p_status VARCHAR2, p_position NUMBER DEFAULT NULL, p_fastest_lap CHAR DEFAULT 'N') IS
+    v_race_id f1_races.race_id%TYPE;
     v_driver_id f1_drivers.driver_id%TYPE;
   BEGIN
-    SELECT race_id INTO v_race_id
-      FROM f1_races
-     WHERE gp_code = p_gp_code;
-
-    SELECT driver_id INTO v_driver_id
-      FROM f1_drivers
-     WHERE driver_code = p_driver_code;
+    SELECT race_id INTO v_race_id FROM f1_races WHERE gp_code = p_gp_code;
+    SELECT driver_id INTO v_driver_id FROM f1_drivers WHERE driver_code = p_driver_code;
 
     IF p_status = 'FINISH' THEN
       IF p_position IS NULL OR p_position < 1 THEN
@@ -101,8 +82,6 @@ CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
     WHEN e_fastest_lap_rule THEN
       RAISE_APPLICATION_ERROR(-20011, 'Invalid fastest_lap value (must be Y or N).');
   END pr_add_result;
-
-
   PROCEDURE pr_recalc_race_points(p_gp_code VARCHAR2) IS
     v_race_id f1_races.race_id%TYPE;
 
@@ -114,44 +93,28 @@ CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
 
     v_base_points NUMBER;
   BEGIN
-    SELECT race_id INTO v_race_id
-      FROM f1_races
-     WHERE gp_code = p_gp_code;
+    SELECT race_id INTO v_race_id FROM f1_races WHERE gp_code = p_gp_code;
 
     FOR rec IN c_res(v_race_id) LOOP
       IF rec.status = 'FINISH' THEN
         v_base_points := fn_points_for_position(rec.position);
-
         IF rec.fastest_lap = 'Y' THEN
-          IF rec.position BETWEEN 1 AND 10 THEN
-            v_base_points := v_base_points + 1;
-          ELSE
-            RAISE e_fastest_lap_rule;
-          END IF;
+          IF rec.position BETWEEN 1 AND 10 THEN v_base_points := v_base_points + 1; ELSE RAISE e_fastest_lap_rule; END IF;
         END IF;
-
-        UPDATE f1_race_results
-           SET points = v_base_points
-         WHERE CURRENT OF c_res;
-
+        UPDATE f1_race_results SET points = v_base_points WHERE CURRENT OF c_res;
       ELSE
-        UPDATE f1_race_results
-           SET points = 0
-         WHERE CURRENT OF c_res;
+        UPDATE f1_race_results SET points = 0 WHERE CURRENT OF c_res;
       END IF;
     END LOOP;
-
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
       RAISE_APPLICATION_ERROR(-20003, 'Race not found for gp_code=' || p_gp_code);
     WHEN e_fastest_lap_rule THEN
       RAISE_APPLICATION_ERROR(-20012, 'Fastest lap is only allowed for a FINISH result in top 10.');
   END pr_recalc_race_points;
-
-
   PROCEDURE pr_set_season_champions(p_season_year NUMBER) IS
     v_driver_id NUMBER;
-    v_team_id   NUMBER;
+    v_team_id NUMBER;
   BEGIN
     SELECT driver_id
       INTO v_driver_id
