@@ -1,0 +1,61 @@
+                     +----------------------+
+                     |      F1_SEASONS      |
+                     +----------------------+
+                     | PK season_id         |
+                     | UQ season_year       |
+                     | champion_driver_id   |  (stocat ca NUMBER, fara FK)
+                     | champion_team_id     |  (stocat ca NUMBER, fara FK)
+                     +----------+-----------+
+                                |
+                                | 1:N
+                                |
+                     +----------v-----------+
+                     |       F1_RACES       |
+                     +----------------------+
+                     | PK race_id           |
+                     | FK season_id         | ---> F1_SEASONS.season_id
+                     | UQ gp_code           |
+                     | gp_name              |
+                     | race_date            |
+                     | country              |
+                     | city                 |
+                     +----------+-----------+
+                                |
+                                | 1:N
+                                |
+                +---------------v----------------+
+                |         F1_RACE_RESULTS        |
+                +--------------------------------+
+                | PK result_id                   |
+                | FK race_id                     | ---> F1_RACES.race_id
+                | FK driver_id                   | ---> F1_DRIVERS.driver_id
+                | UQ (race_id, driver_id)        |
+                | status (FINISH/DNF/DSQ)        |
+                | position (NULL daca DNF/DSQ)   |
+                | points                         |
+                | fastest_lap (Y/N)              |
+                +--------------------------------+
+
+                     +----------------------+
+                     |       F1_TEAMS       |
+                     +----------------------+
+                     | PK team_id           |
+                     | UQ team_code         |
+                     | UQ name              |
+                     | country              |
+                     | engine               |
+                     +----------+-----------+
+                                |
+                                | 1:N
+                                |
+                     +----------v-----------+
+                     |      F1_DRIVERS      |
+                     +----------------------+
+                     | PK driver_id         |
+                     | UQ driver_code       |
+                     | FK team_id           | ---> F1_TEAMS.team_id
+                     | first_name           |
+                     | last_name            |
+                     | country              |
+                     | birth_date           |
+                     +----------------------+
