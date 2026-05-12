@@ -1,9 +1,15 @@
-CREATE OR REPLACE TRIGGER trg_f1_one_fastest_lap BEFORE INSERT OR UPDATE OF fastest_lap, race_id ON f1_race_results FOR EACH ROW
-DECLARE v_cnt NUMBER;
+CREATE OR REPLACE TRIGGER trg_f1_validate_fastest_lap
+BEFORE INSERT OR UPDATE OF fastest_lap, status ON f1_race_results
+FOR EACH ROW
 BEGIN
-  IF :NEW.fastest_lap = 'Y' THEN
-    SELECT COUNT(*) INTO v_cnt FROM f1_race_results WHERE race_id = :NEW.race_id AND fastest_lap = 'Y' AND (:NEW.result_id IS NULL OR result_id <> :NEW.result_id);
-    IF v_cnt > 0 THEN RAISE_APPLICATION_ERROR(-20100, 'Only one fastest lap (Y) is allowed per race.'); END IF;
+  IF :NEW.fastest_lap IS NULL THEN
+    :NEW.fastest_lap := 'N';
+  END IF;
+  IF :NEW.fastest_lap NOT IN ('Y', 'N') THEN
+    RAISE_APPLICATION_ERROR(-20120, 'fastest_lap must be Y or N.');
+  END IF;
+  IF :NEW.status <> 'FINISH' THEN
+    :NEW.fastest_lap := 'N';
   END IF;
 END;
 /
@@ -20,4 +26,8 @@ BEGIN
     :NEW.points := 0;
   END IF;
 END;
+/
+begin
+dbms_output.put_line('Pirvan Sebastian');
+end;
 /

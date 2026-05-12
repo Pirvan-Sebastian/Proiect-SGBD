@@ -78,10 +78,11 @@ CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
     WHEN DUP_VAL_ON_INDEX THEN
       RAISE_APPLICATION_ERROR(-20002, 'Duplicate result: this driver already has a result for this race.');
     WHEN e_invalid_position THEN
-      RAISE_APPLICATION_ERROR(-20010, 'Invalid position for given status (FINISH needs position; DNF/DSQ must have NULL).');
+      RAISE_APPLICATION_ERROR(-20010, 'Invalid position for status.');
     WHEN e_fastest_lap_rule THEN
-      RAISE_APPLICATION_ERROR(-20011, 'Invalid fastest_lap value (must be Y or N).');
+      RAISE_APPLICATION_ERROR(-20011, 'Invalid fastest_lap value (must be Y or N).'); --YES or NO
   END pr_add_result;
+
   PROCEDURE pr_recalc_race_points(p_gp_code VARCHAR2) IS
     v_race_id f1_races.race_id%TYPE;
 
@@ -112,6 +113,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_f1 AS
     WHEN e_fastest_lap_rule THEN
       RAISE_APPLICATION_ERROR(-20012, 'Fastest lap is only allowed for a FINISH result in top 10.');
   END pr_recalc_race_points;
+  
   PROCEDURE pr_set_season_champions(p_season_year NUMBER) IS
     v_driver_id NUMBER;
     v_team_id NUMBER;
